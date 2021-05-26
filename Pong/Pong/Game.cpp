@@ -31,6 +31,8 @@ void Game::runLoop()
 		processInput();
 		update();
 		generateOutput();
+		// Adding this so it doesn't freeze up LOL
+		isRunning = false;
 	}
 }
 
