@@ -31,8 +31,6 @@ void Game::runLoop()
 		processInput();
 		update();
 		generateOutput();
-		// Adding this so it doesn't freeze up LOL
-		isRunning = false;
 	}
 }
 
@@ -43,6 +41,24 @@ void Game::shutdown(){
 
 void Game::processInput()
 {
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			isRunning = false;
+			break;
+		}
+	}
+
+	//Get keyboard state
+	const Uint8* state = SDL_GetKeyboardState(NULL);
+	if (state[SDL_SCANCODE_ESCAPE])
+	{
+		isRunning = false;
+	}
+
 }
 
 void Game::update()
