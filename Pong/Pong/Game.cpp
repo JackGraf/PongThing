@@ -1,5 +1,7 @@
 #include "Game.h"
 
+SDL_Renderer* renderer;
+
 Game::Game()
 {
 	isRunning = true;
@@ -8,6 +10,7 @@ Game::Game()
 
 int Game::initialize()
 {
+	// Init SDL
 	SDL_Log("Iniitializing SDL...");
 	int result = SDL_Init(SDL_INIT_EVERYTHING);
 	if (result != 0)
@@ -15,12 +18,20 @@ int Game::initialize()
 		SDL_Log("Failed to initialize SDL. Error: %s", SDL_GetError());
 	}
 
+	// Create window
 	window = SDL_CreateWindow("Pong Thing", 100, 100, 1024, 768, 0);
-
 	if (!window)
 	{
 		SDL_Log("Failed to create window: %s", SDL_GetError());
 	}
+
+	// Create renderer
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	if (!renderer)
+	{
+		SDL_Log("Failed to create renderer: %s", SDL_GetError());
+	}
+
 	return result;
 }
 
@@ -36,7 +47,7 @@ void Game::runLoop()
 
 
 void Game::shutdown(){
-
+	SDL_DestroyRenderer(renderer);
 }
 
 void Game::processInput()
@@ -67,4 +78,7 @@ void Game::update()
 
 void Game::generateOutput()
 {
+	SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+	SDL_RenderClear(renderer);
+	SDL_RenderPresent(renderer);
 }
