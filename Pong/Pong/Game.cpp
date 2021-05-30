@@ -2,11 +2,20 @@
 
 SDL_Renderer* renderer;
 const int thickness = 15;
+const int screenHeight = 768;
+const int screenWidth = 1024;
+Vector2 paddlePos, ballPos;
 
 Game::Game()
 {
 	isRunning = true;
 	window = nullptr;
+
+	// Set paddle and ball position
+	paddlePos.x = thickness;
+	paddlePos.y = screenHeight / 2;
+	ballPos.x = screenWidth / 2;
+	ballPos.y = screenHeight / 2;
 }
 
 int Game::initialize()
@@ -97,19 +106,36 @@ void Game::generateOutput()
 
 	SDL_Rect bottomWall{
 	0,
-	768-thickness,
-	1024,
+	screenHeight-thickness,
+	screenWidth,
 	thickness
 	};
 	SDL_RenderFillRect(renderer, &bottomWall);
 
 	SDL_Rect rightWall{
-	1024-thickness,
+	screenWidth-thickness,
 	0,
 	thickness,
-	768
+	screenHeight
 	};
 	SDL_RenderFillRect(renderer, &rightWall);
+
+	// Drawing paddle and ball
+	SDL_Rect ball{
+		static_cast<int>(ballPos.x - thickness / 2),
+		static_cast<int>(ballPos.y - thickness / 2),
+		thickness,
+		thickness
+	};
+	SDL_RenderFillRect(renderer, &ball);
+
+	SDL_Rect paddle{
+	static_cast<int>(paddlePos.x - thickness / 2),
+	static_cast<int>(paddlePos.y - thickness / 2),
+	thickness,
+	thickness * 5
+	};
+	SDL_RenderFillRect(renderer, &paddle);
 
 
 
