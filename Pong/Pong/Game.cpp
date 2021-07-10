@@ -5,17 +5,24 @@ const int thickness = 15;
 const int screenHeight = 768;
 const int screenWidth = 1024;
 Vector2 paddlePos, ballPos;
+int paddleDir, paddleHeight, paddleWidth;
+Uint32 ticksCount;
 
 Game::Game()
 {
 	isRunning = true;
 	window = nullptr;
+	ticksCount = 0;
 
 	// Set paddle and ball position
+	paddleHeight = thickness * 5;
+	paddleWidth = thickness;
 	paddlePos.x = thickness;
-	paddlePos.y = screenHeight / 2;
+	paddlePos.y = (screenHeight / 2) - (paddleHeight / 2);
+
 	ballPos.x = screenWidth / 2;
 	ballPos.y = screenHeight / 2;
+
 }
 
 int Game::initialize()
@@ -74,18 +81,54 @@ void Game::processInput()
 			break;
 		}
 	}
-
-	//Get keyboard state
+	
 	const Uint8* state = SDL_GetKeyboardState(NULL);
 	if (state[SDL_SCANCODE_ESCAPE])
 	{
 		isRunning = false;
 	}
 
+	paddleDir = 0;
+	if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP])
+	{
+		paddleDir -= 1;
+	}
+	if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN])
+	{
+		paddleDir += 1;
+	}
 }
 
 void Game::update()
 {
+	// Wait until 16ms has passed since last frame
+	while (!SDL_TICKS_PASSED(SDL_GetTicks(), ticksCount + 16));
+
+	// delta time is the number of ticks since last frame (converted to seconds)
+	float deltaTime = (SDL_GetTicks() - ticksCount) / 1000.0f;
+	ticksCount = SDL_GetTicks();
+
+	// Clamp maximum delta time
+	if (deltaTime > 0.05f)
+	{
+		deltaTime = 0.05f;
+	}
+
+	if (paddleDir != 0)
+	{
+		paddlePos.y += paddleDir * 300.0f * deltaTime;
+
+		// If paddle would go off screen, move it back
+		if (paddlePos.y < thickness)
+		{
+			paddlePos.y = thickness;
+		}
+		else if ((paddlePos.y + paddleHeight) > (screenHeight - thickness))
+		{
+			paddlePos.y = screenHeight - thickness - paddleHeight;
+		}
+	}
+
 }
 
 void Game::generateOutput()
@@ -130,10 +173,10 @@ void Game::generateOutput()
 	SDL_RenderFillRect(renderer, &ball);
 
 	SDL_Rect paddle{
-	static_cast<int>(paddlePos.x - thickness / 2),
-	static_cast<int>(paddlePos.y - thickness / 2),
-	thickness,
-	thickness * 5
+		static_cast<int>(paddlePos.x),
+		static_cast<int>(paddlePos.y),
+		paddleWidth,
+		paddleHeight
 	};
 	SDL_RenderFillRect(renderer, &paddle);
 
