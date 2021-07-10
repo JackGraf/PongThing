@@ -4,8 +4,9 @@ SDL_Renderer* renderer;
 const int thickness = 15;
 const int screenHeight = 768;
 const int screenWidth = 1024;
-Vector2 paddlePos, ballPos;
+Vector2 paddlePos, ballPos, ballVelocity;
 int paddleDir, paddleHeight, paddleWidth;
+int ballHeight, ballWidth;
 Uint32 ticksCount;
 
 Game::Game()
@@ -20,8 +21,11 @@ Game::Game()
 	paddlePos.x = thickness;
 	paddlePos.y = (screenHeight / 2) - (paddleHeight / 2);
 
+	ballHeight = ballWidth = thickness;
 	ballPos.x = screenWidth / 2;
 	ballPos.y = screenHeight / 2;
+	ballVelocity.x = -200.0f;
+	ballVelocity.y = 235.0f;
 
 }
 
@@ -114,6 +118,7 @@ void Game::update()
 		deltaTime = 0.05f;
 	}
 
+	// Paddle movement
 	if (paddleDir != 0)
 	{
 		paddlePos.y += paddleDir * 300.0f * deltaTime;
@@ -127,6 +132,33 @@ void Game::update()
 		{
 			paddlePos.y = screenHeight - thickness - paddleHeight;
 		}
+	}
+
+	// Ball movement
+	ballPos.x += ballVelocity.x * deltaTime;
+	ballPos.y += ballVelocity.y * deltaTime;
+
+	// Collision detection
+	if (ballPos.y <= thickness && ballVelocity.y < 0.0f)
+	{
+		ballVelocity.y *= -1;
+	}
+	else if ((ballPos.y + ballHeight) > (screenHeight - thickness) && (ballVelocity.y > 0.0f))
+	{
+		ballVelocity.y *= -1;
+	}
+	else if ((ballPos.x + ballWidth) > (screenWidth - thickness) && (ballVelocity.x > 0.0f))
+	{
+		ballVelocity.x *= -1;
+	} else if (	
+				// Ball is moving to the left
+				(ballVelocity.x < 0.0f) &&
+				// Ball is at correct X position
+				(ballPos.x <= paddlePos.x + paddleWidth) && (ballPos.x >= paddlePos.x - paddleWidth) &&
+				// Ball is at correct Y position
+				(ballPos.y >= paddlePos.y) && (ballPos.y <= paddlePos.y + paddleHeight))
+	{ 
+		ballVelocity.x *= -1;
 	}
 
 }
@@ -148,27 +180,27 @@ void Game::generateOutput()
 	SDL_RenderFillRect(renderer, &topWall);
 
 	SDL_Rect bottomWall{
-	0,
-	screenHeight-thickness,
-	screenWidth,
-	thickness
+		0,
+		screenHeight-thickness,
+		screenWidth,
+		thickness
 	};
 	SDL_RenderFillRect(renderer, &bottomWall);
 
 	SDL_Rect rightWall{
-	screenWidth-thickness,
-	0,
-	thickness,
-	screenHeight
+		screenWidth-thickness,
+		0,
+		thickness,
+		screenHeight
 	};
 	SDL_RenderFillRect(renderer, &rightWall);
 
 	// Drawing paddle and ball
 	SDL_Rect ball{
-		static_cast<int>(ballPos.x - thickness / 2),
-		static_cast<int>(ballPos.y - thickness / 2),
-		thickness,
-		thickness
+		static_cast<int>(ballPos.x),
+		static_cast<int>(ballPos.y),
+		ballWidth,
+		ballHeight
 	};
 	SDL_RenderFillRect(renderer, &ball);
 
